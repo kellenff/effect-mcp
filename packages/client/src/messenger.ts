@@ -6,21 +6,21 @@ import {
   RequestId,
   Result,
 } from "@effect-mcp/shared";
+import * as Mailbox from "effect/Mailbox";
 import * as Effect from "effect/Effect";
-import * as PubSub from "effect/PubSub";
 
 export class Messenger extends Effect.Service<Messenger>()(
   "@effect-mcp/server/Messenger",
   {
     effect: Effect.gen(function* () {
-      const outbound = yield* PubSub.bounded<JSONRPCMessage>(100);
+      const outbound = yield* Mailbox.make<JSONRPCMessage>();
 
       const sendResult = Effect.fn("SendResult")(function* (
         id: RequestId,
         result: Result
       ) {
         yield* Effect.log(`Sending result:`, result);
-        yield* PubSub.publish(outbound, {
+        yield* outbound.offer({
           jsonrpc: "2.0",
           id: id,
           result: result,
@@ -32,7 +32,7 @@ export class Messenger extends Effect.Service<Messenger>()(
         error: JsonRpcError
       ) {
         yield* Effect.log(`Sending error:`, error);
-        yield* PubSub.publish(outbound, {
+        yield* outbound.offer({
           jsonrpc: "2.0",
           id: id,
           error: error,
@@ -43,7 +43,7 @@ export class Messenger extends Effect.Service<Messenger>()(
         notification: Notification
       ) {
         yield* Effect.log(`Sending notification:`, notification);
-        yield* PubSub.publish(outbound, {
+        yield* outbound.offer({
           jsonrpc: "2.0",
           method: notification.method,
           params: notification.params,
@@ -51,11 +51,13 @@ export class Messenger extends Effect.Service<Messenger>()(
       });
 
       const sendRequest = Effect.fn("SendRequest")(function* (
+        id: RequestId,
         request: Request
       ) {
         yield* Effect.log(`Sending request:`, request);
-        yield* PubSub.publish(outbound, {
+        yield* outbound.offer({
           jsonrpc: "2.0",
+          id: id,
           method: request.method,
           params: request.params,
         });

@@ -18,7 +18,47 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
 
-  examples/basic:
+  examples/client:
+    dependencies:
+      '@effect-mcp/client':
+        specifier: workspace:*
+        version: link:../../packages/client
+      '@effect-mcp/server':
+        specifier: workspace:*
+        version: link:../../packages/server
+      '@effect/ai':
+        specifier: ^0.10.2
+        version: 0.10.2(@effect/experimental@0.41.2(@effect/platform-node@0.73.2(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2))(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2)(ws@8.18.1))(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2)
+      '@effect/platform':
+        specifier: ^0.77.2
+        version: 0.77.2(effect@3.13.2)
+      '@effect/platform-node':
+        specifier: ^0.73.2
+        version: 0.73.2(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2)
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.6.0
+        version: 1.6.0
+      effect:
+        specifier: ^3.13.2
+        version: 3.13.2
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
+    devDependencies:
+      tsup:
+        specifier: ^8.3.6
+        version: 8.3.6(postcss@8.5.3)(typescript@5.7.3)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.7.3
+      vite:
+        specifier: ^6.1.1
+        version: 6.1.1(@types/node@22.13.5)
+      vite-node:
+        specifier: ^3.0.7
+        version: 3.0.7(@types/node@22.13.5)
+
+  examples/server:
     dependencies:
       '@effect-mcp/server':
         specifier: workspace:*
@@ -55,14 +95,49 @@ importers:
         specifier: ^3.0.7
         version: 3.0.7(@types/node@22.13.5)
 
+  packages/client:
+    dependencies:
+      '@effect-mcp/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@effect/platform':
+        specifier: ^0.77.2
+        version: 0.77.2(effect@3.13.2)
+      effect:
+        specifier: ^3.13.2
+        version: 3.13.2
+      typescript:
+        specifier: ^5.7.3
+        version: 5.7.3
+    devDependencies:
+      tsup:
+        specifier: ^8.3.6
+        version: 8.3.6(postcss@8.5.3)(typescript@5.7.3)
+
   packages/server:
     dependencies:
+      '@effect-mcp/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@effect/ai':
         specifier: ^0.10.2
         version: 0.10.2(@effect/experimental@0.41.2(@effect/platform-node@0.73.2(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2))(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2)(ws@8.18.1))(@effect/platform@0.77.2(effect@3.13.2))(effect@3.13.2)
       '@effect/platform':
         specifier: ^0.77.2
         version: 0.77.2(effect@3.13.2)
+      effect:
+        specifier: ^3.13.2
+        version: 3.13.2
+      typescript:
+        specifier: ^5.7.3
+        version: 5.7.3
+    devDependencies:
+      tsup:
+        specifier: ^8.3.6
+        version: 8.3.6(postcss@8.5.3)(typescript@5.7.3)
+
+  packages/shared:
+    dependencies:
       effect:
         specifier: ^3.13.2
         version: 3.13.2

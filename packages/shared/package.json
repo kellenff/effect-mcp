@@ -1,7 +1,8 @@
 {
-  "name": "@effect-mcp/server",
+  "name": "@effect-mcp/shared",
   "version": "0.0.1",
-  "description": "Effect MCP Server",
+  "private": true,
+  "description": "Effect MCP Shared",
   "type": "module",
   "scripts": {
     "build": "pnpm run build:code && pnpm run build:types",
@@ -31,13 +32,33 @@
         "types": "./dist/index.d.ts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./mcp": {
+      "import": {
+        "@effect-mcp/dev": "./src/mcp/mcp.ts",
+        "types": "./dist/mcp/mcp.d.ts",
+        "default": "./dist/mcp/mcp.js"
+      },
+      "require": {
+        "@effect-mcp/dev": "./src/mcp/mcp.ts",
+        "types": "./dist/mcp/mcp.d.ts",
+        "default": "./dist/mcp/mcp.cjs"
+      }
+    },
+    "./schema": {
+      "import": {
+        "@effect-mcp/dev": "./src/schema/schema.ts",
+        "types": "./dist/schema/schema.d.ts",
+        "default": "./dist/schema/schema.js"
+      },
+      "require": {
+        "@effect-mcp/dev": "./src/schema/schema.ts",
+        "types": "./dist/schema/schema.d.ts",
+        "default": "./dist/schema/schema.cjs"
+      }
     }
   },
-  "dependencies": {
-    "@effect-mcp/shared": "workspace:*",
-    "@effect/ai": "^0.10.2",
-    "@effect/platform": "^0.77.2"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "effect": "^3.13.2",
     "typescript": "^5.7.3"

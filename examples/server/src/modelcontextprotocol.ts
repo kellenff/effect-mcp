@@ -13,7 +13,7 @@ const server = new McpServer({
 });
 
 server.resource(
-  "echo",
+  "Echo",
   new ResourceTemplate("echo://{message}", { list: undefined }),
   async (uri, { message }) => ({
     contents: [
@@ -25,11 +25,11 @@ server.resource(
   })
 );
 
-server.tool("echo", { message: z.string() }, async ({ message }) => ({
+server.tool("Echo", { message: z.string() }, async ({ message }) => ({
   content: [{ type: "text", text: `Tool echo: ${message}` }],
 }));
  
-server.prompt("echo", { message: z.string() }, ({ message }) => ({
+server.prompt("Echo", { message: z.string() }, ({ message }) => ({
   messages: [
     {
       role: "user",

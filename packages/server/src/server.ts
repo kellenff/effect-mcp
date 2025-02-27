@@ -1,17 +1,3 @@
-import * as AiToolkit from "@effect/ai/AiToolkit";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
-import * as Match from "effect/Match";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Scope from "effect/Scope";
-import * as HashMap from "effect/HashMap";
-import * as JsonSchema from "effect/JSONSchema";
-import * as AST from "effect/SchemaAST";
-import { JsonRpcError } from "../error.js";
-import { Messenger } from "../messenger.js";
-import * as PromptKit from "../prompts/prompt-kit.js";
 import {
   CallToolRequest,
   CallToolResult,
@@ -21,6 +7,7 @@ import {
   CompleteRequest,
   GetPromptRequest,
   GetPromptResult,
+  JsonRpcError,
   JSONRPCError,
   JSONRPCNotification,
   JSONRPCRequest,
@@ -33,6 +20,7 @@ import {
   ListRootsResult,
   ListToolsRequest,
   ListToolsResult,
+  MCP,
   Prompt,
   PromptMessage,
   ReadResourceRequest,
@@ -46,8 +34,20 @@ import {
   type InitializeResult,
   type PingRequest,
   type RequestId,
-} from "../schema.js";
-import * as MCP from "./mcp.js";
+} from "@effect-mcp/shared";
+import * as AiToolkit from "@effect/ai/AiToolkit";
+import * as Effect from "effect/Effect";
+import * as HashMap from "effect/HashMap";
+import * as JsonSchema from "effect/JSONSchema";
+import * as Layer from "effect/Layer";
+import * as Match from "effect/Match";
+import * as Option from "effect/Option";
+import * as Predicate from "effect/Predicate";
+import * as Schema from "effect/Schema";
+import * as AST from "effect/SchemaAST";
+import * as Scope from "effect/Scope";
+import { Messenger } from "./messenger.js";
+import * as PromptKit from "./prompts/prompt-kit.js";
 
 export const make = (
   config: Implementation
@@ -183,8 +183,6 @@ export const make = (
           description: (prop.annotations.description ?? "") as string,
           required: !prop.isOptional,
         }));
-
-        console.dir({ ast, propertySigs, args }, { depth: null });
 
         prompts.push({
           name: prompt.name,

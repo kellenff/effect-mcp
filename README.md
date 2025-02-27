@@ -26,8 +26,10 @@ See the `examples/basic` directory for a simple example of how to use the MCP se
 
 ## Project Structure
 
+- `packages/client`: Core MCP client implementation
 - `packages/server`: Core MCP server implementation
-- `examples/basic`: Basic example of using the MCP server
+- `examples/client`: Basic examples of using the MCP server compared with vanilla TS MCP client
+- `examples/server`: Basic examples of using the MCP server compared with vanilla TS MCP server
 
 ## ⚠️ Active Development
 
@@ -54,8 +56,8 @@ Also MCP itself is still early and under development. There is currently a somew
 - [x] Initialize
 - [ ] Complete
 - [ ] Set Log Level
-- [ ] Get Prompt
-- [ ] List Prompts
+- [x] Get Prompt
+- [x] List Prompts
 - [ ] List Resources
 - [ ] List Resource Templates
 - [ ] Read Resource
@@ -72,7 +74,8 @@ Also MCP itself is still early and under development. There is currently a somew
 
 ### MCP Client
 
-- [ ] Client implementation
+- [x] Client Stdio Transport
+- [ ] Client SSE Transport
 
 ## License
 

@@ -1,16 +1,14 @@
+import { handleMessage, JSONRPCMessage } from "@effect-mcp/shared";
 import * as Terminal from "@effect/platform/Terminal";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
-import * as FiberRef from "effect/FiberRef";
-import * as HashSet from "effect/HashSet";
 import * as Layer from "effect/Layer";
+import * as Logger from "effect/Logger";
+import * as LogLevel from "effect/LogLevel";
 import * as Queue from "effect/Queue";
 import * as Schedule from "effect/Schedule";
 import * as Schema from "effect/Schema";
-import { MCP } from "../mcp/mcp.js";
 import { Messenger } from "../messenger.js";
-import { JSONRPCMessage } from "../schema.js";
-import { handleMessage } from "./shared.js";
 
 export class StdioServerTransport extends Context.Tag(
   "@effect-mcp/server/StdioServerTransport"
@@ -18,9 +16,7 @@ export class StdioServerTransport extends Context.Tag(
 
 export const make = Effect.gen(function* () {
   const messenger = yield* Messenger;
-  const mcp = yield* MCP;
   const terminal = yield* Terminal.Terminal;
-  // const fs = yield* FileSystem.FileSystem;
 
   const outbound = yield* messenger.outbound.subscribe;
 
@@ -53,11 +49,10 @@ export const make = Effect.gen(function* () {
     ),
     Effect.repeat(Schedule.forever)
   );
-});
-
-// TODO: Clear loggers as part of stdio transport
-export const clearAllLoggers = Layer.scopedDiscard(
-  Effect.locallyScoped(FiberRef.currentLoggers, HashSet.empty())
+}).pipe(
+  // Hiding all logs so they don't interfere with the stdio stream
+  // Currently can't figure out how to remove default logger from an effect. Only on the top level program.
+  Logger.withMinimumLogLevel(LogLevel.None)
 );
 
 export const layer = Layer.effect(StdioServerTransport, make);

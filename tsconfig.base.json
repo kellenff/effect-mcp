@@ -35,7 +35,11 @@
 
     "rootDir": "${configDir}/src",
     "outDir": "${configDir}/dist",
-    "customConditions": ["@effect-mcp/dev"]
+    "customConditions": ["@effect-mcp/dev"],
+    "paths": {
+      "@effect-mcp/shared": ["./packages/shared/src/index.ts"],
+      "@effect-mcp/shared/*": ["./packages/shared/src/*"]
+    }
   },
   "include": ["${configDir}/src"]
 }

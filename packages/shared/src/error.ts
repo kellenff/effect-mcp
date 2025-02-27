@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
 
-export const ErrorCode = {
+export const JsonRpcErrorCode = {
   // SDK error codes
   ConnectionClosed: -32000,
   RequestTimeout: -32001,
@@ -22,12 +22,12 @@ export class JsonRpcError extends Schema.TaggedError<JsonRpcError>()(
   }
 ) {
   static readonly fromCode = (
-    cause: keyof typeof ErrorCode,
+    cause: keyof typeof JsonRpcErrorCode,
     message: string,
     data?: unknown
   ) =>
     new JsonRpcError({
-      code: ErrorCode[cause],
+      code: JsonRpcErrorCode[cause],
       message: message,
       data: data,
     });

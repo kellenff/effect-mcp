@@ -1,7 +1,6 @@
+import type { JsonRpcError, PromptMessage } from "@effect-mcp/shared";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
-import type { JsonRpcError } from "../error.js";
-import type { PromptMessage } from "../schema.js";
 
 /**
  * @since 1.0.0

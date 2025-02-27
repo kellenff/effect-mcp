@@ -1,7 +1,7 @@
 {
-  "name": "@effect-mcp/server",
+  "name": "@effect-mcp/client",
   "version": "0.0.1",
-  "description": "Effect MCP Server",
+  "description": "Effect MCP Client",
   "type": "module",
   "scripts": {
     "build": "pnpm run build:code && pnpm run build:types",
@@ -35,7 +35,6 @@
   },
   "dependencies": {
     "@effect-mcp/shared": "workspace:*",
-    "@effect/ai": "^0.10.2",
     "@effect/platform": "^0.77.2"
   },
   "peerDependencies": {
