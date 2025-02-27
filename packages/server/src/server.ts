@@ -45,7 +45,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as AST from "effect/SchemaAST";
-import * as Scope from "effect/Scope";
+import * as Scope from "effect/Scope";å
 import { Messenger } from "./messenger.js";
 import * as PromptKit from "./prompts/prompt-kit.js";
 
