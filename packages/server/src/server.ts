@@ -35,32 +35,34 @@ import {
   type PingRequest,
   type RequestId,
 } from "@effect-mcp/shared";
-import * as AiToolkit from "@effect/ai/AiToolkit";
+import * as AiTool from "@effect/ai/Tool";
+import * as Toolkit from "@effect/ai/Toolkit";
+
+type ToolkitType<Tools extends Record<string, AiTool.Any>> = Toolkit.Toolkit<Tools>;
 import * as Effect from "effect/Effect";
 import * as HashMap from "effect/HashMap";
 import * as JsonSchema from "effect/JSONSchema";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as AST from "effect/SchemaAST";
 import * as Scope from "effect/Scope";
 import { Messenger } from "./messenger.js";
 import * as PromptKit from "./prompts/prompt-kit.js";
 
-export const make = (
-  config: Implementation
+export const make = <Tools extends Record<string, AiTool.Any>>(
+  config: Implementation,
+  toolkit: ToolkitType<Tools> = Toolkit.empty as unknown as ToolkitType<Tools>
 ): Effect.Effect<
   MCP.MCP.Service,
   never,
-  Scope.Scope | Messenger | AiToolkit.Registry
+  Scope.Scope | Messenger | AiTool.HandlersFor<Tools>
 > =>
   Effect.gen(function* () {
     const messenger = yield* Messenger;
-    const toolkit = yield* Effect.serviceOption(AiToolkit.Registry);
     const promptkit = yield* Effect.serviceOption(PromptKit.Registry);
-    // TODO: Add tools, prompts, resources, etc.
+    const tk = yield* toolkit;
 
     const _notImplemented = (...args: any[]) =>
       Effect.gen(function* () {
@@ -82,12 +84,10 @@ export const make = (
       id: RequestId,
       message: InitializeRequest
     ) {
-      // TODO: Validate client info
       yield* Effect.log(`Initializing server with client info:`, message);
 
       const response: InitializeResult = {
         protocolVersion: LATEST_PROTOCOL_VERSION,
-        // TODO: Get from tools, etc.
         capabilities: {
           tools: {},
           prompts: {},
@@ -203,24 +203,13 @@ export const make = (
     ) {
       const tools: Tool[] = [];
 
-      if (Option.isNone(toolkit)) {
-        const data: ListToolsResult = {
-          tools,
-        };
-        return yield* messenger.sendResult(id, data);
+      for (const tool of Object.values(tk.tools)) {
+        tools.push({
+          name: tool.name,
+          description: tool.description ?? "",
+          inputSchema: makeJsonSchema(tool.parametersSchema.ast) as any,
+        });
       }
-
-      yield* Effect.forEach(toolkit.value.keys(), (schema) =>
-        Effect.gen(function* () {
-          const ast = (schema as any).ast;
-
-          tools.push({
-            name: schema._tag,
-            inputSchema: makeJsonSchema(ast) as any,
-            description: getDescription(ast),
-          });
-        })
-      );
 
       const data: ListToolsResult = {
         tools,
@@ -232,20 +221,8 @@ export const make = (
       id: RequestId,
       message: CallToolRequest
     ) {
-      // TODO: Implement
-      if (Option.isNone(toolkit)) {
-        return yield* messenger.sendError(
-          id,
-          JsonRpcError.fromCode(
-            "InvalidParams",
-            "The tool does not exist / is not available."
-          )
-        );
-      }
-
-      const tool = Array.from(toolkit.value.entries()).find(
-        ([schema, _]) => schema._tag === message.params.name
-      );
+      const toolName = message.params.name;
+      const tool = (tk.tools as Record<string, AiTool.Any>)[toolName];
       if (!tool) {
         return yield* messenger.sendError(
           id,
@@ -255,37 +232,18 @@ export const make = (
           )
         );
       }
-      const decodeArgs = Schema.decodeUnknown(tool[0] as any);
-      const encodeSuccess = Schema.encode(tool[0].success);
 
-      const output = yield* decodeArgs(
-        injectTag(message.params.arguments, message.params.name)
-      ).pipe(
-        Effect.mapError((err) =>
-          JsonRpcError.fromCode("ParseError", err.message, err.issue)
-        ),
-        Effect.flatMap(tool[1]),
+      const handlerResult = yield* tk.handle(toolName, message.params.arguments as any).pipe(
         Effect.mapError((err) =>
           JsonRpcError.fromCode("InternalError", "Error calling tool", err)
-        ),
-        Effect.flatMap((res) =>
-          encodeSuccess(res).pipe(
-            Effect.mapError((err) =>
-              JsonRpcError.fromCode(
-                "ParseError",
-                "Error encoding tool result",
-                err
-              )
-            )
-          )
         )
-      ) as Effect.Effect<any, JsonRpcError>;
+      );
 
       const result: CallToolResult = {
         content: [
           {
             type: "text",
-            text: JSON.stringify(output),
+            text: JSON.stringify(handlerResult.encodedResult),
           },
         ],
       };
@@ -472,20 +430,17 @@ export const make = (
     } satisfies MCP.MCP.Service;
   });
 
-export const layer = (config: Implementation) =>
-  Layer.effect(MCP.MCP, make(config)).pipe(
+export const layer = <Tools extends Record<string, AiTool.Any>>(
+  config: Implementation,
+  toolkit: ToolkitType<Tools> = Toolkit.empty as unknown as ToolkitType<Tools>
+) =>
+  Layer.effect(MCP.MCP, make(config, toolkit)).pipe(
     Layer.provideMerge(Messenger.Default)
   );
 
 /**
  *
  * Internal utilities copied from `@effect/ai` since they are not exported.
- */
-
-/**
- *
- * @param ast
- * @returns
  */
 
 const makeJsonSchema = (ast: AST.AST): JsonSchema.JsonSchema7 => {
@@ -498,37 +453,3 @@ const makeJsonSchema = (ast: AST.AST): JsonSchema.JsonSchema7 => {
   (schema as any).$defs = $defs;
   return schema;
 };
-
-const getDescription = (ast: AST.AST): string => {
-  const annotations =
-    ast._tag === "Transformation"
-      ? {
-          ...ast.to.annotations,
-          ...ast.annotations,
-        }
-      : ast.annotations;
-  return AST.DescriptionAnnotationId in annotations
-    ? (annotations[AST.DescriptionAnnotationId] as string)
-    : "";
-};
-
-/**
- * Certain providers (i.e. Anthropic) do not do a great job returning the
- * `_tag` enum with the parameters for a tool call. This method ensures that
- * the `_tag` is injected into the tool call parameters to avoid issues when
- * decoding.
- */
-function injectTag(params: unknown, tag: string) {
-  // If for some reason we do not receive an object back for the tool call
-  // input parameters, just return them unchanged
-  if (!Predicate.isObject(params)) {
-    return params;
-  }
-  // If the tool's `_tag` is already present in input parameters, return them
-  // unchanged
-  if (Predicate.hasProperty(params, "_tag")) {
-    return params;
-  }
-  // Otherwise inject the tool's `_tag` into the input parameters
-  return { ...params, _tag: tag };
-}

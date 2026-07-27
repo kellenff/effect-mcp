@@ -32,6 +32,7 @@
 
     /* If your code doesn't run in the DOM: */
     "lib": ["es2022"],
+    "types": ["node"],
 
     "rootDir": "${configDir}/src",
     "outDir": "${configDir}/dist",

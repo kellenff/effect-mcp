@@ -4,7 +4,7 @@ import {
   PromptKit,
   StdioServerTransport,
 } from "@effect-mcp/server";
-import { AiToolkit } from "@effect/ai";
+import { Tool, Toolkit } from "@effect/ai";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Effect, Layer, Schema } from "effect";
 
@@ -12,31 +12,27 @@ import { Effect, Layer, Schema } from "effect";
  * Tools
  */
 
-class Calculator extends Schema.TaggedRequest<Calculator>()(
-  "Calculator",
-  {
-    success: Schema.String,
-    failure: Schema.String,
-    payload: {
-      expression: Schema.String,
-    },
+const Calculator = Tool.make("Calculator", {
+  description: "Evaluate a mathematical expression",
+  parameters: {
+    expression: Schema.String,
   },
-  { description: "Evaluate a mathematical expression" }
-) {}
+  success: Schema.String,
+});
 
-const toolkit = AiToolkit.empty.add(Calculator);
+const toolkit = Toolkit.make(Calculator);
 
-const ToolkitLive = toolkit.implement((handlers) =>
-  handlers.handle("Calculator", (params) => {
+const ToolkitLive = toolkit.toLayer({
+  Calculator: ({ expression }) => {
     try {
       // Simple eval for demonstration purposes
-      const result = eval(params.expression);
+      const result = eval(expression);
       return Effect.succeed(`Result: ${result}`);
     } catch (error) {
       return Effect.succeed(`Error: Invalid expression`);
     }
-  })
-);
+  },
+});
 
 /**
  * Prompts
@@ -95,10 +91,13 @@ const PromptkitLive = PromptKit.empty
  * Server
  */
 
-export const ServerLive = McpServer.layer({
-  name: "WeatherCalculator",
-  version: "0.0.1",
-}).pipe(
+export const ServerLive = McpServer.layer(
+  {
+    name: "WeatherCalculator",
+    version: "0.0.1",
+  },
+  toolkit
+).pipe(
   Layer.provide(ToolkitLive),
   Layer.provide(PromptkitLive),
   Layer.provide(Layer.scope)

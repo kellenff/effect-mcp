@@ -1,5 +1,6 @@
 import { JsonRpcError, JSONRPCMessage } from "@effect-mcp/shared";
 import * as Command from "@effect/platform/Command";
+import { TextDecoder } from "node:util";
 import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
