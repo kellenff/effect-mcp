@@ -15,9 +15,9 @@
     "build:watch": "turbo watch build"
   },
   "devDependencies": {
-    "@types/node": "^22.13.5",
-    "turbo": "^2.4.2",
-    "typescript": "^5.7.3"
+    "@types/node": "^26.1.1",
+    "turbo": "^2.10.7",
+    "typescript": "^7.0.2"
   },
   "workspaces": [
     "examples/*",

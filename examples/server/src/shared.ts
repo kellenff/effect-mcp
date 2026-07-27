@@ -1,28 +1,24 @@
 import { McpServer, Prompt, PromptKit } from "@effect-mcp/server";
-import { AiToolkit } from "@effect/ai";
+import { Tool, Toolkit } from "@effect/ai";
 import { Effect, Layer, Schema } from "effect";
 
 /**
  * Tools
  */
 
-class Echo extends Schema.TaggedRequest<Echo>()(
-  "Echo",
-  {
-    success: Schema.String,
-    failure: Schema.String,
-    payload: {
-      message: Schema.String,
-    },
+const Echo = Tool.make("Echo", {
+  description: "Echo a message",
+  parameters: {
+    message: Schema.String,
   },
-  { description: "Echo a message" }
-) {}
+  success: Schema.String,
+});
 
-const toolkit = AiToolkit.empty.add(Echo);
+const toolkit = Toolkit.make(Echo);
 
-const ToolkitLive = toolkit.implement((handlers) =>
-  handlers.handle("Echo", (params) => Effect.succeed(`Echo: ${params.message}`))
-);
+const ToolkitLive = toolkit.toLayer({
+  Echo: ({ message }) => Effect.succeed(`Echo: ${message}`),
+});
 
 /**
  * Prompts
@@ -82,10 +78,13 @@ const PromptkitLive = PromptKit.empty
  * Server
  */
 
-export const ServerLive = McpServer.layer({
-  name: "Echo",
-  version: "0.0.1",
-}).pipe(
+export const ServerLive = McpServer.layer(
+  {
+    name: "Echo",
+    version: "0.0.1",
+  },
+  toolkit
+).pipe(
   Layer.provide(ToolkitLive),
   Layer.provide(PromptkitLive),
   Layer.provide(Layer.scope)

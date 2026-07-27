@@ -49,9 +49,10 @@ import * as Option from "effect/Option";
 import * as Ref from "effect/Ref";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
+import { randomUUID } from "node:crypto";
 import { DeferredMap } from "./transport/deferred.js";
 import { Transport } from "./transport/transport.js";
-const generateId = () => RequestId.make(crypto.randomUUID());
+const generateId = () => RequestId.make(randomUUID());
 
 export type McpClientOpts = {
   timeout?: Duration.Duration;

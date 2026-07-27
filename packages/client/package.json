@@ -35,13 +35,14 @@
   },
   "dependencies": {
     "@effect-mcp/shared": "workspace:*",
-    "@effect/platform": "^0.77.2"
+    "@effect/platform": "^0.97.0"
   },
   "peerDependencies": {
-    "effect": "^3.13.2",
-    "typescript": "^5.7.3"
+    "effect": "^3.22.0",
+    "typescript": "^7.0.2"
   },
   "devDependencies": {
-    "tsup": "^8.3.6"
+    "@types/node": "^26.1.1",
+    "tsup": "^8.5.1"
   }
 }

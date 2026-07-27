@@ -13,17 +13,17 @@
   "dependencies": {
     "@effect-mcp/client": "workspace:*",
     "@effect-mcp/server": "workspace:*",
-    "@effect/ai": "^0.10.2",
-    "@effect/platform": "^0.77.2",
-    "@effect/platform-node": "^0.73.2",
-    "@modelcontextprotocol/sdk": "^1.6.0",
-    "effect": "^3.13.2",
-    "zod": "^3.24.2"
+    "@effect/ai": "^0.37.0",
+    "@effect/platform": "^0.97.0",
+    "@effect/platform-node": "^0.108.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "effect": "^3.22.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "tsup": "^8.3.6",
-    "typescript": "^5.7.3",
-    "vite": "^6.1.1",
-    "vite-node": "^3.0.7"
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vite-node": "^6.0.0"
   }
 }

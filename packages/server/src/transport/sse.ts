@@ -5,6 +5,8 @@ import * as HttpHeaders from "@effect/platform/Headers";
 import * as HttpRouter from "@effect/platform/HttpRouter";
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest";
 import * as HttpServerResponse from "@effect/platform/HttpServerResponse";
+import { randomUUID } from "node:crypto";
+import { TextEncoder } from "node:util";
 import * as Effect from "effect/Effect";
 import { pipe } from "effect/Function";
 import * as Schema from "effect/Schema";
@@ -16,7 +18,7 @@ export const SSERoute = (msgEndpoint: string) =>
     "GET",
     "/sse",
     Effect.gen(function* () {
-      const sessionId = crypto.randomUUID();
+      const sessionId = randomUUID();
       const messenger = yield* Messenger;
       yield* Effect.log(`New SSE session: ${sessionId}`);
       // TODO: Filter by sessionId or make new stream per session
