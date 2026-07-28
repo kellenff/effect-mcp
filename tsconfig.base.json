@@ -42,5 +42,6 @@
       "@effect-mcp/shared/*": ["./packages/shared/src/*"]
     }
   },
-  "include": ["${configDir}/src"]
+  "include": ["${configDir}/src"],
+  "exclude": ["${configDir}/src/**/*.bench.ts", "${configDir}/src/**/*.test.ts", "${configDir}/src/**/*.spec.ts"]
 }

@@ -3,7 +3,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig({
   format: ["esm", "cjs"],
-  entry: ["src/**/*.ts"],
+  entry: ["src/index.ts", "src/mcp.ts", "src/schema.ts", "src/error.ts"],
   clean: true,
   target: "esnext",
   treeshake: false,
