@@ -16,7 +16,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:bench": "vitest bench --run",
-    "test:bench:watch": "vitest bench"
+    "test:bench:watch": "vitest bench",
+    "test:mutate": "pnpm -r --if-present test:mutate"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
