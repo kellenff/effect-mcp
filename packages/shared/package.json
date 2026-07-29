@@ -7,7 +7,9 @@
   "scripts": {
     "build": "pnpm run build:code && pnpm run build:types",
     "build:code": "tsup",
-    "build:types": "rm -f tsconfig.tsbuildinfo && tsc --emitDeclarationOnly"
+    "build:types": "rm -f tsconfig.tsbuildinfo && tsc --emitDeclarationOnly",
+    "test:mutate": "stryker run",
+    "test:mutate:watch": "stryker run --watch"
   },
   "keywords": [
     "effect",
@@ -63,6 +65,9 @@
     "typescript": "^7.0.2"
   },
   "devDependencies": {
+    "@stryker-mutator/core": "9.6.1",
+    "@stryker-mutator/vitest-runner": "9.6.1",
+    "@stryker-mutator/typescript-checker": "9.6.1",
     "tsup": "^8.5.1"
   }
 }
