@@ -17,6 +17,12 @@ const servers = {
   calculator: server2Cmd,
 };
 
+/**
+ * An effect that initializes multiple MCP clients, retrieves their available tools and prompts,
+ * and logs the results. For each server configuration, it creates a client, initializes it,
+ * fetches the list of tools and prompts, then combines all results into a single object
+ * which is logged as debug output.
+ */
 const program = Effect.gen(function* () {
   const results = yield* Effect.forEach(
     Object.entries(servers),

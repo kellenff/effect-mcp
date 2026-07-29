@@ -90,6 +90,38 @@ const notification: JSONRPCNotification = {
   params: { requestId: "1", reason: "test" },
 };
 
+/**
+ * Minimal-viable `JSONRPCNotification` fixture used by the
+ * `Schema decode from plain JS > JSONRPCNotification` and
+ * `Schema encode to plain JS > JSONRPCNotification` benchmarks.
+ *
+ * It is the simplest valid progress notification the bench file
+ * produces — a single half-completed item — so the encode /
+ * decode timings reflect the envelope itself (`jsonrpc`,
+ * `method`, top-level `params` discrimination,
+ * `progressToken` parsing) without the cost of a realistic
+ * multi-call chain.
+ *
+ * Field shape:
+ *   - `method: "notifications/progress"` — required to
+ *     discriminate this notification from any other; the
+ *     server / client demuxer routes on this string.
+ *   - `params.progressToken: "tok-1"` — opaque string that ties
+ *     the notification back to the originating request (the
+ *     caller provided this on `_meta.progressToken` of the
+ *     request). `"tok-1"` is intentionally short and stable so
+ *     the fixture is easy to identify in bench output.
+ *   - `params.progress: 0.5` — current progress fraction. `0.5`
+ *     is chosen (rather than `0`) so the encoder exercises
+ *     non-zero numeric formatting.
+ *   - `params.total: 1` — small whole-number denominator so the
+ *     shape decodes as a complete `{ progress, total }` (not the
+ *     "unknown total" branch). Set to `1` to keep the fixture
+ *     obviously synthetic.
+ *
+ * Decoded against `Progress` in `@effect-mcp/shared/schema` —
+ * see that schema's docs for the wire contract.
+ */
 const progressNotification: JSONRPCNotification = {
   jsonrpc: "2.0",
   method: "notifications/progress",
@@ -100,6 +132,33 @@ const progressNotification: JSONRPCNotification = {
   },
 };
 
+/**
+ * Minimal-viable `JSONRPCResponse` fixture used by the
+ * `Schema decode from plain JS > JSONRPCResponse` and
+ * `Schema encode to plain JS > JSONRPCResponse` benchmarks.
+ *
+ * It is the *simplest valid response* the bench file produces — a
+ * pong-shaped answer with only `_meta` in the result, no real domain
+ * payload — so the encode/decode timings reflect the schema envelope
+ * itself (`jsonrpc`, `id`, top-level `result` discrimination, `_meta`
+ * propagation) without the cost of a realistic `CallToolResult` or
+ * `ListToolsResult` body. The richer `callToolResult` /
+ * `callToolResultJS` fixtures cover those paths separately.
+ *
+ * The id `"1"` is intentionally shared with `pingRequest` so the
+ * same response can also be used as the matching answer for a
+ * `Ping` round-trip — see the "Round-trip encode + decode >
+ * PingRequest" bench lower in the file.
+ *
+ * Field shape:
+ *   - `jsonrpc: "2.0"` — required version tag.
+ *   - `id: "1"`        — the "first" request id, shared with
+ *                        `pingRequest` for round-trips.
+ *   - `result: { _meta: { pong: true } }` — a single `_meta` flag,
+ *                        conventionally carried by MCP ping replies
+ *                        to identify them as such (here simply a
+ *                        boolean).
+ */
 const response: JSONRPCResponse = {
   jsonrpc: "2.0",
   id: "1",
@@ -112,6 +171,35 @@ const errorMessage: JSONRPCError = {
   error: { code: -32601, message: "Method not found" },
 };
 
+/**
+ * Fixture used by the encode / round-trip benchmarks for the
+ * `tools/call` **happy path** — the model's typical innermost loop
+ * message shape.
+ *
+ * Built with `JSONRPCResponse.make(...)` (the schema factory) rather
+ * than the plain-JS object form (`callToolResultJS`) because the
+ * `Schema encode to plain JS > JSONRPCResponse (CallToolResult)` and
+ * `Round-trip encode + decode > CallToolResult` benchmarks exercise
+ * the encode path on a value that *already* satisfies the schema.
+ * That isolates the measured work to encoding itself, not to
+ * structural fix-up or coercion.
+ *
+ * The leading spread (`...`) lets any defaults the factory adds
+ * (`_meta`, etc.) flow through this const unchanged, so it stays
+ * bit-for-bit equivalent to what a freshly-validated server response
+ * would look like on the wire.
+ *
+ * Shape:
+ *   - `id: "5"`        — the fourth unique request id (after ping,
+ *                        initialize, call/list-tools), dedicated to
+ *                        result fixtures to avoid id collisions
+ *                        across the bench file.
+ *   - `result.content` — a single text content item with the echo
+ *                        payload `"Echo: hello world"`.
+ *   - `result.isError` — `false` (happy path; error-shaped responses
+ *                        are benchmarked separately via
+ *                        `errorMessage`).
+ */
 const callToolResult = {
   ...JSONRPCResponse.make({
     jsonrpc: "2.0",
@@ -153,6 +241,31 @@ describe("Schema decode from plain JS", () => {
     Schema.decodeUnknownSync(CancelledNotification)(notification);
   });
 
+  /**
+   * Decode-throughput bench for `JSONRPCNotification` when the
+   * notification payload is a `notifications/progress` payload.
+   *
+   * Subject: the `progressNotification` fixture declared above
+   * (a `JSONRPCNotification` with
+   * `method: "notifications/progress"` and a
+   * `{ progressToken, progress, total }` params block).
+   *
+   * Operation: `Schema.decodeUnknownSync(ProgressNotification)` —
+   *   - validates the envelope (`jsonrpc`, `method`,
+   *     top-level `params` discrimination),
+   *   - discriminates `method` against the `ProgressNotification`
+   *     tagged-union branch,
+   *   - parses `params.progressToken` against `ProgressToken`
+   *     (the `string | int` union defined in `shared/schema.ts`)
+   *     and `progress` / `total` against `Progress`.
+   *
+   * Pairs with the "Round-trip encode + decode >
+   * JSONRPCNotification (progress)" bench just below to provide
+   * the **decode half** in isolation. The encode half is
+   * exercised by the `Schema encode to plain JS >
+   * JSONRPCNotification` bench at the top of this file (which
+   * uses a different fixture).
+   */
   bench("JSONRPCNotification (progress)", () => {
     Schema.decodeUnknownSync(ProgressNotification)(progressNotification);
   });

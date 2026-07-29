@@ -4,6 +4,13 @@ import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Effect, Logger, LogLevel } from "effect";
 import { serverCwd } from "./shared.js";
 
+/**
+ * Creates a command to execute a Node.js script with working directory configuration.
+ * The command runs node with the specified script path and pipes the working directory
+ * setting to configure the execution environment.
+ *
+ * @type {Command}
+ */
 const command = Command.make("node", "./dist/stdio.js").pipe(
   Command.workingDirectory(serverCwd)
 );
