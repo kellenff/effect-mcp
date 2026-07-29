@@ -25,6 +25,37 @@ const Count = AiTool.make("Count", {
 
 const toolkit = Toolkit.make(Echo, Count);
 
+/**
+ * Minimal tool-handler `Layer` used by the server-side
+ * request-handling benches in this file.
+ *
+ * Built via `toolkit.toLayer({...})`, which returns a `Layer`
+ * that registers each provided handler under its tool name. The
+ * resulting dispatcher is enough to exercise the server's full
+ * request-handling plumbing — encode → route → validate →
+ * dispatch → encode result — without dragging in real tool
+ * implementations. The handlers themselves are deliberately
+ * toy stand-ins.
+ *
+ * Handlers provided:
+ *   - `Echo` — accepts `{ message: string }` and returns
+ *     `"Echo: ${message}"`. Pure / total: no CPU work beyond
+ *     the template substitution. Useful for measuring the
+ *     *envelope* cost without conflating it with application
+ *     work.
+ *   - `Count` — accepts `{ n: number }` and runs a tight
+ *     `O(n)` loop summing `0..n-1` inside `Effect.sync`. The
+ *     `Effect.sync` is critical: it makes the CPU work actually
+ *     run on the bench thread, so the result measures
+ *     *CPU-bound* request-handling cost rather than the
+ *     envelope-only path. Use a large `n` to make the loop
+ *     dominate, a small `n` to expose per-iteration overhead.
+ *
+ * @returns A `Layer` providing the tool-dispatcher service.
+ *          Pipe it into the bench program alongside the
+ *          transport layer to stand up a minimal but
+ *          fully-wired server.
+ */
 const handlers = toolkit.toLayer({
   Echo: ({ message }) => Effect.succeed(`Echo: ${message}`),
   Count: ({ n }) =>

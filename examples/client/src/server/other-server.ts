@@ -9,9 +9,10 @@ import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Effect, Layer, Schema } from "effect";
 
 /**
- * Tools
+ * Calculator tool for evaluating mathematical expressions.
+ *
+ * Accepts a string containing a mathematical expression and returns the result of evaluating that expression.
  */
-
 const Calculator = Tool.make("Calculator", {
   description: "Evaluate a mathematical expression",
   parameters: {
@@ -20,8 +21,29 @@ const Calculator = Tool.make("Calculator", {
   success: Schema.String,
 });
 
+/**
+ * Represents a toolkit instance created from the Calculator class.
+ * This toolkit provides access to calculator functionality and operations.
+ * The toolkit is instantiated using the Toolkit.make() factory method
+ * with Calculator as the source class for generating the toolkit interface.
+ */
 const toolkit = Toolkit.make(Calculator);
 
+/**
+ * ToolkitLive
+ *
+ * A live implementation of the toolkit layer that provides concrete functionality
+ * for toolkit operations. This variable contains the runtime implementation
+ * that can be used to execute toolkit services in a live environment.
+ *
+ * The implementation includes a Calculator service that evaluates mathematical
+ * expressions and returns the result or an error message if the expression
+ * is invalid. The calculator uses JavaScript's eval function for evaluation
+ * and handles both successful computations and errors gracefully.
+ *
+ * This live implementation can be used in place of mock or test implementations
+ * when actual toolkit functionality is required during application execution.
+ */
 const ToolkitLive = toolkit.toLayer({
   Calculator: ({ expression }) => {
     try {
@@ -35,9 +57,11 @@ const ToolkitLive = toolkit.toLayer({
 });
 
 /**
- * Prompts
+ * A finalized PromptKit instance aggregating two effect-based prompts:
+ * a calculator prompt for evaluating mathematical expressions and
+ * a weather prompt that returns a forecast string for a requested
+ * location, optionally including humidity information.
  */
-
 const PromptkitLive = PromptKit.empty
   .add(
     Prompt.effect(
@@ -87,10 +111,13 @@ const PromptkitLive = PromptKit.empty
     )
   )
   .finalize();
-/**
- * Server
- */
 
+/**
+ * ServerLive represents a configured server layer for the WeatherCalculator service.
+ * This layer integrates core toolkit dependencies and provides a scoped execution environment.
+ * The server is built using McpServer with version 0.0.1 and includes necessary
+ * infrastructure layers for toolkit functionality, prompt handling, and scoped operations.
+ */
 export const ServerLive = McpServer.layer(
   {
     name: "WeatherCalculator",
@@ -103,6 +130,11 @@ export const ServerLive = McpServer.layer(
   Layer.provide(Layer.scope)
 );
 
+/**
+ * A layered application runtime environment that combines server lifecycle management with Node.js context provisioning.
+ * This layer merges the server live layer with Node.js context capabilities and includes scope management.
+ * It provides the necessary infrastructure for running applications with proper resource lifecycle handling.
+ */
 const AppLive = Layer.provideMerge(ServerLive, NodeContext.layer).pipe(
   Layer.provideMerge(Layer.scope)
 );
